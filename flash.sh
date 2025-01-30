@@ -1,0 +1,1 @@
+openocd -f stlink.cfg -c "program build/Debug/DAQ_25.elf verify reset exit"
