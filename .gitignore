@@ -2,3 +2,4 @@ build
 cmake
 Drivers
 FreeRTOS-Kernel
+.vscode
