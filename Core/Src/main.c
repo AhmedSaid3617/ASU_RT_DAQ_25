@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "IMU.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,17 +42,31 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN PV */
+
+/*======================== IMU VARIABLES DEFINITIONS ==========================*/
+
+IMU_structCfg imu1 = {
+		.u8Address = 0x29 ,           /* IMU ADD PIN IN DAQ IS CONNECTED TO VCC */
+		.I2cId = &hi2c1 ,
+		.u8OperationMode = IMU_OPERATION_MODE_NDOF               /* FUSION MODE */
+};
+
+IMU_tstructVector imu_test_vector;
+
+/*====================== END IMU VARIABLES DEFINITIONS ========================*/
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 void green_task();
-void pin1_task();
+void IMU_task();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -88,9 +103,29 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+
+  /*============================================= IMU CONFIG ============================================= */
+
+  /* 01 - Init */
+  IMU_voidInit(&imu1);
+
+  /* 02 - Mapping */
+  IMU_tAxisMap loc_structMapping={
+  	.x = IMU_AXIS_X ,
+  	.y = IMU_AXIS_Y ,
+  	.z = IMU_AXIS_Z ,
+  	.x_sign = IMU_AXIS_SIGN_POSITIVE ,
+  	.y_sign = IMU_AXIS_SIGN_POSITIVE ,
+  	.z_sign = IMU_AXIS_SIGN_POSITIVE
+  };
+  IMU_voidSetAxisMap(&imu1,&loc_structMapping);
+
+  /*=========================================== END IMU CONFIG =========================================== */
+
   xTaskCreate(green_task, "Green Task", 500, NULL, 1, NULL);
-  xTaskCreate(pin1_task, "External Pin Task", 500, NULL, 1, NULL);
+  xTaskCreate(IMU_task, "External Pin Task", 500, NULL, 1, NULL);
 
   vTaskStartScheduler();
   /* USER CODE END 2 */
@@ -152,6 +187,40 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -171,9 +240,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : PC9 */
   GPIO_InitStruct.Pin = GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -181,19 +247,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-
+/* ========================================= RTOS TASKS ========================================= */
 void green_task()
 {
   while (1)
@@ -203,14 +262,16 @@ void green_task()
   }
 }
 
-void pin1_task()
+void IMU_task()
 {
   while (1)
   {
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-    vTaskDelay(200);
+    imu_test_vector = IMU_structGetVectorEuler(&imu1);
+    vTaskDelay(1000);
   }
 }
+
+/* ========================================= END RTOS TASKS ========================================= */
 
 /* USER CODE END 4 */
 
