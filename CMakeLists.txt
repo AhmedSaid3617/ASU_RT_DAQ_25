@@ -59,6 +59,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     FreeRTOS-Kernel/portable/GCC/ARM_CM4F/port.c
 
     IMU/Src/IMU.c
+    COMM/Src/COMM.c
+
 )
 
 # Add include paths
@@ -68,6 +70,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     FreeRTOS-Kernel/portable/GCC/ARM_CM4F
 
     IMU/Inc
+    COMM/Inc
 )
 
 # Add project symbols (macros)
