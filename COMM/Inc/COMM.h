@@ -17,30 +17,30 @@
  * 
  */
 typedef struct{
-    uint8_t size;
-    uint16_t id;
-    uint64_t data;
+    uint8_t size;  /*!< Size of the data in bytes. */
+    uint16_t id;   /*!< 11-bit CAN message id. Must be the least-significant 11 bits. */
+    uint64_t data; /*!< Data to be sent. Maximum of 8 bytes (as specified by CAN protocol). */
 } COMM_can_message_t;
 
-// TODO: clean these comments up.
 /**
- * @brief Adds one CAN message to the FreeRTOS queue, to be transmitted using CAN by the CAN task.
- * 
- * @param can_handle SLKDJVNKD
- * @param message Can message to be sent, with data and message ID.
+ * @brief Adds one CAN message to the FreeRTOS queue, to be transmitted on CAN bus by the CAN task.
+ * @param message Pointer to CAN message object to be enqueued.
  */
 void COMM_can_enqueue(COMM_can_message_t* message);
 
 /**
- * @brief Initializes the COMM task by
+ * @brief Initializes the COMM task by starting CAN communication and setting the can_tx_header.
  * 
+ * @param can_handle Pointer to CAN handle object.
+ * @param can_tx_header Pointer to CAN TX header object.
  */
 void COMM_init(CAN_HandleTypeDef *can_handle, CAN_TxHeaderTypeDef* can_tx_header);
 
 /**
- * @brief Get and remove a message from the queue.
+ * @brief Dequeues one COMM_can_message_t from the FreeRTOS CAN queue.
  * 
- * @return COMM_can_message_t 
+ * @return COMM_can_message_t: the dequeued message.
+ * @attention This function should only be used in CAN task. If the queue is empty, it will block the task until the queue is not empty.
  */
 COMM_can_message_t COMM_can_dequeue();
 
