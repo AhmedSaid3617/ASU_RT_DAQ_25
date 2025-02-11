@@ -53,7 +53,8 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void trace_task_in(void);
+void trace_task_out();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

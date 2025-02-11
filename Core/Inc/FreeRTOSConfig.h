@@ -128,6 +128,8 @@ standard names. */
 #define xPortPendSVHandler 	PendSV_Handler
 #define xPortSysTickHandler SysTick_Handler
 
+#define traceTASK_SWITCHED_IN() trace_task_in();
+#define traceTASK_SWITCHED_OUT() trace_task_out();
 
 #endif /* FREERTOS_CONFIG_H */
 
