@@ -22,6 +22,12 @@ typedef struct{
     uint64_t data; /*!< Data to be sent. Maximum of 8 bytes (as specified by CAN protocol). */
 } COMM_can_message_t;
 
+typedef enum {
+    COMM_CAN_ID_LED = 3,
+    COMM_CAN_ID_IMU,
+    COMM_CAN_ID_TRAVEL
+} COMM_can_id;
+
 /**
  * @brief Adds one CAN message to the FreeRTOS queue, to be transmitted on CAN bus by the CAN task.
  * @param message Pointer to CAN message object to be enqueued.

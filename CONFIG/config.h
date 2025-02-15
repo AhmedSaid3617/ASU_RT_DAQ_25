@@ -3,13 +3,14 @@
 
 /* ======================================= TRAVEL ======================================= */
 
-#define	LINEAR_POT_PEAK		100
+#define LINEAR_POT_PEAK 100
 
-#define  NO_OF_TRAVEL_SENSORS        4
-#define  MAX_VALUE_TRAVEL_SENSOR     4095
+#define CONFIG_TRAVEL_SENSOR_NUM 4
+#define CONFIG_ADC_MAX_VALUE 4095
 
-#define  NO_OF_PRESSURE_SENSORS      2
-#define  MAX_VALUE_PRESSURE_SENSOR   4095
+#define CONFIG_PRESSURE_SENSOR_NUM 2
+
+#define CONFIG_TRAVEL_TASK_WAIT 100
 
 /* ===================================== END TRAVEL ===================================== */
 
