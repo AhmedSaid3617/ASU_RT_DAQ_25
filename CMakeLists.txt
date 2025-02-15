@@ -58,8 +58,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
     FreeRTOS-Kernel/portable/GCC/ARM_CM4F/port.c
 
-    #IMU/Src/IMU.c
-    COMM/Src/COMM.c
+    #ExtModules/IMU/Src/IMU.c
+    ExtModules/COMM/Src/COMM.c
 
 )
 
@@ -69,8 +69,9 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     FreeRTOS-Kernel/include
     FreeRTOS-Kernel/portable/GCC/ARM_CM4F
 
-    IMU/Inc
-    COMM/Inc
+    CONFIG
+    ExtModules/IMU/Inc
+    ExtModules/COMM/Inc
 )
 
 # Add project symbols (macros)
