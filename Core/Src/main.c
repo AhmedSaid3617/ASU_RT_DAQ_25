@@ -396,20 +396,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC9 */
   GPIO_InitStruct.Pin = GPIO_PIN_9;
@@ -417,13 +404,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB6 PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -433,13 +413,13 @@ static void MX_GPIO_Init(void)
 /* ========================================= RTOS TASKS ========================================= */
 void green_task()
 {
-  COMM_can_message_t can_message;
+  COMM_can_message_t can_message = {};
   can_message.size = 4;
   can_message.id = COMM_CAN_ID_LED;
   while (1)
   {
     can_message.data = xTaskGetTickCount();
-    COMM_can_enqueue(&can_message); 
+    //COMM_can_enqueue(&can_message); 
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
     vTaskDelay(250);
   }
@@ -447,7 +427,7 @@ void green_task()
 
 void IMU_task()
 {
-  COMM_can_message_t can_message;
+  COMM_can_message_t can_message = {};
   can_message.size = 4;
   can_message.id = COMM_CAN_ID_IMU;
   while (1)
@@ -455,42 +435,45 @@ void IMU_task()
     // TODO: remove this.
     // Send to UART.
     can_message.data = xTaskGetTickCount();
-    COMM_can_enqueue(&can_message);
+    //COMM_can_enqueue(&can_message);
     vTaskDelay(10);
   }
 }
 
 void COMM_CAN_send_task()
 {
-  COMM_can_message_t can_message;
+  COMM_can_message_t can_message = {};
+  uint32_t can_error = 0;
   while (1)
   {
     can_message = COMM_can_dequeue();
     can_tx_header.DLC = can_message.size;
     can_tx_header.StdId = can_message.id;
-
     // TODO: figure out if this is needed.
     taskENTER_CRITICAL();
     if (HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, &can_message.data, &tx_mailbox) == HAL_ERROR)
     {
-      //Error_Handler();
+      can_error = HAL_CAN_GetError(&hcan1);
     }
-    taskEXIT_CRITICAL();
-    
+    taskEXIT_CRITICAL();    
   }
 }
 
 void TRAVEL_task(){
 
-  COMM_can_message_t can_message;
+  COMM_can_message_t can_message = {};
   can_message.size = 8;
   can_message.id = COMM_CAN_ID_TRAVEL;
 
   while (1)
   {
+    TRAVEL_process_adc_readings(ADC_travel_readings, travel_sensor_values);
     for (int i = 0; i < 4; i++)
     {
-      *((double*)(&(can_message.data))) = travel_sensor_values[i];
+      //*((double*)(&(can_message.data))) = travel_sensor_values[i];
+      //can_message.data = *((uint64_t*)(&travel_sensor_values[i]));
+      can_message.data = *(uint64_t*)&travel_sensor_values[i];
+      //can_message.data = ADC_travel_readings[i];
       COMM_can_enqueue(&can_message);
     }
 
@@ -506,30 +489,16 @@ void TRAVEL_task(){
 void trace_task_in(void)
 {
 
-  if (xTaskGetCurrentTaskHandle() == task_handles[0])
-  {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, 1);
-  }
-  else if (xTaskGetCurrentTaskHandle() == task_handles[1])
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1);
-  }
-  else if (xTaskGetCurrentTaskHandle() == task_handles[2])
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1);
-  }
-
 }
 
 void trace_task_out()
 {
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7, 0);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, 0);
+  
 }
 
 void vApplicationIdleHook(void)
 {
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, 1);
+  
 }
 
 /* ========================================= ANALYSIS ========================================= */

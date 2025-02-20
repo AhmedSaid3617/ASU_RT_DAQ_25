@@ -10,7 +10,7 @@
 
 #define CONFIG_PRESSURE_SENSOR_NUM 2
 
-#define CONFIG_TRAVEL_TASK_WAIT 100
+#define CONFIG_TRAVEL_TASK_WAIT 1000
 
 /* ===================================== END TRAVEL ===================================== */
 
