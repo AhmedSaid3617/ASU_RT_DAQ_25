@@ -31,6 +31,7 @@
 /* ============================================= DAQ INCLUDES ============================================== */
 //#include "IMU.h"
 #include "COMM.h"
+#include "proximity.h"
 /* =========================================== DAQ INCLUDES END ============================================ */
 /* USER CODE END Includes */
 
@@ -92,7 +93,6 @@ static void MX_TIM1_Init(void);
 void green_task();
 void IMU_task();
 void CAN_task();
-void PROXIMITY_task();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -165,7 +165,7 @@ int main(void)
   xTaskCreate(green_task, "Green Task", 500, NULL, 1, &task_handles[0]);
   xTaskCreate(IMU_task, "External Pin Task", 500, NULL, 1, &task_handles[1]);
   xTaskCreate(CAN_task, "CAN Task", 500, NULL, 1, &task_handles[2]);
-  xTaskCreate(PROXIMITY_task, "CAN Task", 500, NULL, 1, &task_handles[3]);
+  xTaskCreate(PROXIMITY_task, "Proximity Task", 500, &hdma_tim1_ch2, 1, &task_handles[3]);
 
   vTaskStartScheduler();
   /* USER CODE END 2 */
