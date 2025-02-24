@@ -23,6 +23,7 @@ void PROXIMITY_task()
 
     // TODO: There might be more IDs in the future.
     can_message.id = COMM_CAN_ID_PROX;
+    can_message.size = 4;
     while (1)
     {
         vTaskDelay(67);

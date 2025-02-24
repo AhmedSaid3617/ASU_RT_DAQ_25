@@ -29,7 +29,7 @@
 /* ========================================= END FREERTOS INCLUDES ========================================= */
 
 /* ============================================= DAQ INCLUDES ============================================== */
-//#include "IMU.h"
+// #include "IMU.h"
 #include "COMM.h"
 #include "proximity.h"
 /* =========================================== DAQ INCLUDES END ============================================ */
@@ -60,9 +60,9 @@ DMA_HandleTypeDef hdma_tim1_ch2;
 
 /*======================== IMU VARIABLES ==========================*/
 /* IMU_structCfg imu1 = {
-    .u8Address = 0x29, 
+    .u8Address = 0x29,
     .I2cId = &hi2c1,
-    .u8OperationMode = IMU_OPERATION_MODE_NDOF 
+    .u8OperationMode = IMU_OPERATION_MODE_NDOF
 };
 
 IMU_tstructVector imu_test_vector; */
@@ -137,17 +137,17 @@ int main(void)
   /*============================================= IMU CONFIG ============================================= */
 
   /* 01 - Init */
-  //IMU_voidInit(&imu1);
+  // IMU_voidInit(&imu1);
 
   /* 02 - Mapping */
-/*   IMU_tAxisMap loc_structMapping = {
-      .x = IMU_AXIS_X,
-      .y = IMU_AXIS_Y,
-      .z = IMU_AXIS_Z,
-      .x_sign = IMU_AXIS_SIGN_POSITIVE,
-      .y_sign = IMU_AXIS_SIGN_POSITIVE,
-      .z_sign = IMU_AXIS_SIGN_POSITIVE};
-  IMU_voidSetAxisMap(&imu1, &loc_structMapping); */
+  /*   IMU_tAxisMap loc_structMapping = {
+        .x = IMU_AXIS_X,
+        .y = IMU_AXIS_Y,
+        .z = IMU_AXIS_Z,
+        .x_sign = IMU_AXIS_SIGN_POSITIVE,
+        .y_sign = IMU_AXIS_SIGN_POSITIVE,
+        .z_sign = IMU_AXIS_SIGN_POSITIVE};
+    IMU_voidSetAxisMap(&imu1, &loc_structMapping); */
 
   /*=========================================== END IMU CONFIG =========================================== */
 
@@ -161,6 +161,10 @@ int main(void)
     can_tx_header.TransmitGlobalTime = DISABLE; */
   COMM_init(&hcan1, &can_tx_header);
   /*=========================================== COMM INIT END =========================================== */
+
+  /* ========================================= PROXIMITY ========================================= */
+  PROXIMITY_init(&htim1, &hdma_tim1_ch2);
+  /* ======================================= PROXIMITY END ======================================= */
 
   xTaskCreate(green_task, "Green Task", 500, NULL, 1, &task_handles[0]);
   xTaskCreate(IMU_task, "External Pin Task", 500, NULL, 1, &task_handles[1]);
@@ -400,9 +404,9 @@ void green_task()
   while (1)
   {
     can_message.data = xTaskGetTickCount();
-    COMM_can_enqueue(&can_message); 
+    COMM_can_enqueue(&can_message);
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
-    vTaskDelay(12);
+    vTaskDelay(250);
   }
 }
 
@@ -428,14 +432,16 @@ void CAN_task()
     can_message = COMM_can_dequeue();
     can_tx_header.DLC = can_message.size;
     can_tx_header.StdId = can_message.id;
-
-    // TODO: figure out if this is needed.
-    taskENTER_CRITICAL();
-    if (HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, &can_message.data, &tx_mailbox) == HAL_ERROR)
+    if (can_message.id == 6)
     {
-      //Error_Handler();
+      // TODO: figure out if this is needed.
+      taskENTER_CRITICAL();
+      if (HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, &can_message.data, &tx_mailbox) == HAL_ERROR)
+      {
+        // Error_Handler();
+      }
+      taskEXIT_CRITICAL();
     }
-    taskEXIT_CRITICAL();
   }
 }
 
@@ -458,7 +464,6 @@ void trace_task_in(void)
   {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1);
   }
-
 }
 
 void trace_task_out()

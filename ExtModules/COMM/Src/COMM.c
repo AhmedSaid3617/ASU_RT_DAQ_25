@@ -22,7 +22,7 @@ void COMM_can_enqueue(COMM_can_message_t* message)
 }
 
 COMM_can_message_t COMM_can_dequeue(){
-    COMM_can_message_t message;
+    COMM_can_message_t message = {};
     xQueueReceive(CAN_queue, &message, portMAX_DELAY);
     return message;
 }
