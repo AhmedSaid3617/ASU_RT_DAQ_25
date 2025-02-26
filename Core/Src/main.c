@@ -54,6 +54,7 @@
 CAN_HandleTypeDef hcan1;
 
 TIM_HandleTypeDef htim1;
+DMA_HandleTypeDef hdma_tim1_ch4_trig_com;
 DMA_HandleTypeDef hdma_tim1_ch2;
 
 /* USER CODE BEGIN PV */
@@ -79,6 +80,10 @@ uint8_t data_send[10] = {0x22, 45};
 TaskHandle_t task_handles[4]; /* Task handles for all the tasks created in the program. */
 
 /* ================================= ANALYSIS VARIABLES END ================================= */
+
+/* =================================== PROXIMITY =================================== */
+DMA_HandleTypeDef* PROXIMITY_DMA_handlers[4] = {&hdma_tim1_ch2, &hdma_tim1_ch4_trig_com};
+/* ================================= PROXIMITY END ================================= */
 
 /* USER CODE END PV */
 
@@ -163,13 +168,13 @@ int main(void)
   /*=========================================== COMM INIT END =========================================== */
 
   /* ========================================= PROXIMITY ========================================= */
-  PROXIMITY_init(&htim1, &hdma_tim1_ch2);
+  PROXIMITY_init(&htim1, PROXIMITY_DMA_handlers);
   /* ======================================= PROXIMITY END ======================================= */
 
   xTaskCreate(green_task, "Green Task", 500, NULL, 1, &task_handles[0]);
   xTaskCreate(IMU_task, "External Pin Task", 500, NULL, 1, &task_handles[1]);
   xTaskCreate(CAN_task, "CAN Task", 500, NULL, 1, &task_handles[2]);
-  xTaskCreate(PROXIMITY_task, "Proximity Task", 500, &hdma_tim1_ch2, 1, &task_handles[3]);
+  xTaskCreate(PROXIMITY_task, "Proximity Task", 500, &hdma_tim1_ch4_trig_com, 1, &task_handles[3]);
 
   vTaskStartScheduler();
   /* USER CODE END 2 */
@@ -321,6 +326,10 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
@@ -340,6 +349,9 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  /* DMA2_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream4_IRQn);
 
 }
 

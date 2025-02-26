@@ -11,7 +11,7 @@
 /* =========================================== FREERTOS INCLUDES =========================================== */
 #include "FreeRTOS.h"
 
-void PROXIMITY_init(TIM_HandleTypeDef *htim, DMA_HandleTypeDef *hdma);
+void PROXIMITY_init(TIM_HandleTypeDef *htim, DMA_HandleTypeDef* hdma[4]);
 void PROXIMITY_task();
 
 #endif
