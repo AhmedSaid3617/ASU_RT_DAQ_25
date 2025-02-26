@@ -62,7 +62,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ExtModules/COMM/Src/COMM.c
     ExtModules/TRAVEL/Src/travel.c
     ExtModules/PROXIMITY/Src/proximity.c
-
+    ExtModules/ADC_DEV/Src/adc_dev.c
+    
 )
 
 # Add include paths
@@ -76,6 +77,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ExtModules/COMM/Inc
     ExtModules/TRAVEL/Inc
     ExtModules/PROXIMITY/Inc
+    ExtModules/ADC_DEV/Inc
 )
 
 # Add project symbols (macros)
