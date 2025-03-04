@@ -58,6 +58,14 @@ void trace_task_out();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define FRONT_LEFT_WHEEL_Pin GPIO_PIN_9
+#define FRONT_LEFT_WHEEL_GPIO_Port GPIOA
+#define FRONT_RIGHT_WHEEL_Pin GPIO_PIN_11
+#define FRONT_RIGHT_WHEEL_GPIO_Port GPIOA
+#define IMU_SCL_Pin GPIO_PIN_6
+#define IMU_SCL_GPIO_Port GPIOB
+#define IMU_SDA_Pin GPIO_PIN_7
+#define IMU_SDA_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

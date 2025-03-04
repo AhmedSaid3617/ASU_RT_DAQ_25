@@ -29,7 +29,7 @@
 /* ========================================= END FREERTOS INCLUDES ========================================= */
 
 /* ============================================= DAQ INCLUDES ============================================== */
-// #include "IMU.h"
+#include "IMU.h"
 #include "COMM.h"
 #include "proximity.h"
 #include "adc_dev.h"
@@ -57,6 +57,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 CAN_HandleTypeDef hcan1;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim1;
 DMA_HandleTypeDef hdma_tim1_ch4_trig_com;
 DMA_HandleTypeDef hdma_tim1_ch2;
@@ -64,13 +66,12 @@ DMA_HandleTypeDef hdma_tim1_ch2;
 /* USER CODE BEGIN PV */
 
 /*======================== IMU VARIABLES ==========================*/
-/* IMU_structCfg imu1 = {
+IMU_structCfg imu1 = {
     .u8Address = 0x29,
     .I2cId = &hi2c1,
-    .u8OperationMode = IMU_OPERATION_MODE_NDOF
-};
+    .u8OperationMode = IMU_OPERATION_MODE_NDOF};
 
-IMU_tstructVector imu_test_vector; */
+IMU_tstructVector imu_test_vector;
 /*====================== END IMU VARIABLES ========================*/
 
 /* ============================================= CAN VARIABLES ============================================= */
@@ -86,15 +87,15 @@ TaskHandle_t task_handles[5]; /* Task handles for all the tasks created in the p
 /* ================================= ANALYSIS VARIABLES END ================================= */
 
 /* =================================== PROXIMITY =================================== */
-DMA_HandleTypeDef* PROXIMITY_DMA_handlers[4] = {&hdma_tim1_ch2, &hdma_tim1_ch4_trig_com};
+DMA_HandleTypeDef *PROXIMITY_DMA_handlers[4] = {&hdma_tim1_ch2, &hdma_tim1_ch4_trig_com};
 /* ================================= PROXIMITY END ================================= */
 
 /* =================================== ADC VARIABLES =================================== */
-//uint16_t ADC_travel_readings[CONFIG_TRAVEL_SENSOR_NUM];
+// uint16_t ADC_travel_readings[CONFIG_TRAVEL_SENSOR_NUM];
 /* ================================= ADC VARIABLES END ================================= */
 
 /* =================================== TRAVEL VARIABLES =================================== */
-//double travel_sensor_values[CONFIG_TRAVEL_SENSOR_NUM];
+// double travel_sensor_values[CONFIG_TRAVEL_SENSOR_NUM];
 /* ================================= TRAVEL VARIABLES END ================================= */
 
 /* USER CODE END PV */
@@ -106,6 +107,7 @@ static void MX_DMA_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 void green_task();
@@ -119,9 +121,9 @@ void CAN_task();
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
 
@@ -151,33 +153,27 @@ int main(void)
   MX_CAN1_Init();
   MX_TIM1_Init();
   MX_ADC1_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
   /*============================================= IMU CONFIG ============================================= */
 
   /* 01 - Init */
-  // IMU_voidInit(&imu1);
+  IMU_configure(&imu1);
 
   /* 02 - Mapping */
-  /*   IMU_tAxisMap loc_structMapping = {
-        .x = IMU_AXIS_X,
-        .y = IMU_AXIS_Y,
-        .z = IMU_AXIS_Z,
-        .x_sign = IMU_AXIS_SIGN_POSITIVE,
-        .y_sign = IMU_AXIS_SIGN_POSITIVE,
-        .z_sign = IMU_AXIS_SIGN_POSITIVE};
-    IMU_voidSetAxisMap(&imu1, &loc_structMapping); */
+  IMU_tAxisMap loc_structMapping = {
+      .x = IMU_AXIS_X,
+      .y = IMU_AXIS_Y,
+      .z = IMU_AXIS_Z,
+      .x_sign = IMU_AXIS_SIGN_POSITIVE,
+      .y_sign = IMU_AXIS_SIGN_POSITIVE,
+      .z_sign = IMU_AXIS_SIGN_POSITIVE};
+  IMU_voidSetAxisMap(&imu1, &loc_structMapping);
 
   /*=========================================== END IMU CONFIG =========================================== */
 
   /*=========================================== COMM INIT =========================================== */
-  /*   HAL_CAN_Start(&hcan1);
-    can_tx_header.StdId = 0x321;
-    can_tx_header.ExtId = 0x01;
-    can_tx_header.IDE = CAN_ID_STD;
-    can_tx_header.RTR = CAN_RTR_DATA;
-    can_tx_header.DLC = 1;
-    can_tx_header.TransmitGlobalTime = DISABLE; */
   COMM_init(&hcan1, &can_tx_header);
   /*=========================================== COMM INIT END =========================================== */
 
@@ -210,22 +206,22 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -241,9 +237,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -256,10 +251,10 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief ADC1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief ADC1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_ADC1_Init(void)
 {
 
@@ -274,7 +269,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE END ADC1_Init 1 */
 
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-  */
+   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
@@ -293,7 +288,7 @@ static void MX_ADC1_Init(void)
   }
 
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
+   */
   sConfig.Channel = ADC_CHANNEL_10;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
@@ -304,14 +299,13 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
 }
 
 /**
-  * @brief CAN1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief CAN1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_CAN1_Init(void)
 {
 
@@ -341,14 +335,46 @@ static void MX_CAN1_Init(void)
   /* USER CODE BEGIN CAN1_Init 2 */
 
   /* USER CODE END CAN1_Init 2 */
-
 }
 
 /**
-  * @brief TIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2C1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+}
+
+/**
+ * @brief TIM1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM1_Init(void)
 {
 
@@ -404,30 +430,28 @@ static void MX_TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
-
 }
 
 /**
-  * Enable DMA controller clock
-  */
+ * Enable DMA controller clock
+ */
 static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
-
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
@@ -436,20 +460,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC9 */
   GPIO_InitStruct.Pin = GPIO_PIN_9;
@@ -458,15 +469,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB6 PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -487,15 +491,9 @@ void green_task()
 
 void IMU_task()
 {
-  COMM_can_message_t can_message;
-  can_message.size = 4;
-  can_message.id = COMM_CAN_ID_IMU;
   while (1)
   {
-    // TODO: remove this.
-    can_message.data = xTaskGetTickCount();
-    COMM_can_enqueue(&can_message);
-    vTaskDelay(10);
+    imu_test_vector = IMU_structGetVectorEuler(&imu1);
   }
 }
 
@@ -513,7 +511,7 @@ void CAN_task()
       taskENTER_CRITICAL();
       if (HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, &can_message.data, &tx_mailbox) == HAL_ERROR)
       {
-        
+
         // Error_Handler();
       }
       taskEXIT_CRITICAL();
@@ -558,19 +556,20 @@ void vApplicationIdleHook(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM2 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM2 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM2) {
+  if (htim->Instance == TIM2)
+  {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
@@ -579,9 +578,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -593,14 +592,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

@@ -58,11 +58,12 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
     FreeRTOS-Kernel/portable/GCC/ARM_CM4F/port.c
 
-    #ExtModules/IMU/Src/IMU.c
     ExtModules/COMM/Src/COMM.c
     ExtModules/TRAVEL/Src/travel.c
     ExtModules/PROXIMITY/Src/proximity.c
     ExtModules/ADC_DEV/Src/adc_dev.c
+    ExtModules/IMU/Src/IMU.c
+    ExtModules/IMU/Src/IMU_task.c
     
 )
 
