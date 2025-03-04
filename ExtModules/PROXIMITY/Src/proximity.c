@@ -32,6 +32,7 @@ void PROXIMITY_task()
     can_message.size = 4;
     while (1)
     {
+        // TODO: Change to 50 ms and try again.
         vTaskDelay(67);
 
         for (int wheel_no = 0; wheel_no < 2; wheel_no++)
@@ -60,7 +61,6 @@ void PROXIMITY_task()
                 // Reset the DMA pointer so that it starts at the begining of the array.
                 proximity_dma_handles[wheel_no].Instance->M0AR = &PROXIMITY_DMA_capture_buff[wheel_no];
                 proximity_dma_handles[wheel_no].Instance->NDTR = 16;
-                // TODO: did this fix it? Also we need to do this for 4 wheels.
                 HAL_DMA_Start(&proximity_dma_handles[wheel_no], timer_counters[wheel_no], &PROXIMITY_DMA_capture_buff[wheel_no], 16);
 
                 // Erase the array.
@@ -75,6 +75,7 @@ void PROXIMITY_task()
             }
             else
             {
+                // TODO: macro this magic number and try playing with it.
                 if (slow_counter <= 10) // The car is slow
                 {
                     slow_counter++;
