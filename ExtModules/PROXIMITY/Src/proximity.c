@@ -107,13 +107,15 @@ void PROXIMITY_task()
         }
 
         // TODO: adjust to send speed as double instead of truncating.
-        PROXIMITY_dashboard_speed = PROXIMITY_wheel_speed[1];
-        /* for (uint8_t i = 0; i < 4; i++)
-        {
-            PROXIMITY_dashboard_speed += PROXIMITY_wheel_speed[i];
-        }
-        PROXIMITY_dashboard_speed /= 2.0; */
+        PROXIMITY_dashboard_speed = PROXIMITY_wheel_speed[0];
+        //PROXIMITY_dashboard_speed = 0;
+        //for (uint8_t i = 0; i < 4; i++)
+        //{
+        //    PROXIMITY_dashboard_speed += PROXIMITY_wheel_speed[i];
+        //}
+        //PROXIMITY_dashboard_speed = PROXIMITY_dashboard_speed/2.0;
         can_message.data = (uint64_t)PROXIMITY_dashboard_speed;
         COMM_can_enqueue(&can_message);
+
     }
 }

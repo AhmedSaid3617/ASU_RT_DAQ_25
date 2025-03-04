@@ -518,12 +518,13 @@ void CAN_task()
     can_message = COMM_can_dequeue();
     can_tx_header.DLC = can_message.size;
     can_tx_header.StdId = can_message.id;
-    if (can_message.id == COMM_CAN_ID_TRAVEL)
+    if (can_message.id == COMM_CAN_ID_PROX)
     {
       // TODO: figure out if this is needed.
       taskENTER_CRITICAL();
       if (HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, &can_message.data, &tx_mailbox) == HAL_ERROR)
       {
+        
         // Error_Handler();
       }
       taskEXIT_CRITICAL();
