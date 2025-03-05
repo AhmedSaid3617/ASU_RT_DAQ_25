@@ -88,8 +88,7 @@ IMU_tstructVector IMU_structGetVectorQuaternion(IMU_structCfg * Add_structCfg);
 IMU_structCalibData IMU_structGetCalibrationData(IMU_structCfg * Add_structCfg);
 void IMU_voidSetCalibrationData(IMU_structCfg * Add_structCfg);
 
-/* IMU Task */
+void IMU_init(IMU_structCfg* imu_handle);
 void IMU_task();
-
 
 #endif

@@ -111,7 +111,6 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 void green_task();
-void IMU_task();
 void CAN_task();
 /* USER CODE END PFP */
 
@@ -157,20 +156,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /*============================================= IMU CONFIG ============================================= */
-
-  /* 01 - Init */
-  IMU_configure(&imu1);
-
-  /* 02 - Mapping */
-  IMU_tAxisMap loc_structMapping = {
-      .x = IMU_AXIS_X,
-      .y = IMU_AXIS_Y,
-      .z = IMU_AXIS_Z,
-      .x_sign = IMU_AXIS_SIGN_POSITIVE,
-      .y_sign = IMU_AXIS_SIGN_POSITIVE,
-      .z_sign = IMU_AXIS_SIGN_POSITIVE};
-  IMU_voidSetAxisMap(&imu1, &loc_structMapping);
-
+  IMU_init(&imu1);
   /*=========================================== END IMU CONFIG =========================================== */
 
   /*=========================================== COMM INIT =========================================== */
@@ -186,7 +172,7 @@ int main(void)
   /* ======================================= ADC INIT END ======================================= */
 
   xTaskCreate(green_task, "Green Task", 500, NULL, 1, &task_handles[0]);
-  xTaskCreate(IMU_task, "External Pin Task", 500, NULL, 1, &task_handles[1]);
+  xTaskCreate(IMU_task, "IMU Task", 500, NULL, 1, &task_handles[1]);
   xTaskCreate(CAN_task, "CAN Task", 500, NULL, 1, &task_handles[2]);
   xTaskCreate(PROXIMITY_task, "Proximity Task", 500, &hdma_tim1_ch4_trig_com, 1, &task_handles[3]);
   xTaskCreate(ADC_DEV_task, "TRAVEL Task", 500, NULL, 1, &task_handles[4]);
@@ -489,14 +475,6 @@ void green_task()
   }
 }
 
-void IMU_task()
-{
-  while (1)
-  {
-    imu_test_vector = IMU_structGetVectorEuler(&imu1);
-  }
-}
-
 void CAN_task()
 {
   COMM_can_message_t can_message;
@@ -505,7 +483,7 @@ void CAN_task()
     can_message = COMM_can_dequeue();
     can_tx_header.DLC = can_message.size;
     can_tx_header.StdId = can_message.id;
-    if (can_message.id == COMM_CAN_ID_PROX)
+    if (can_message.id == COMM_CAN_ID_IMU)
     {
       // TODO: figure out if this is needed.
       taskENTER_CRITICAL();

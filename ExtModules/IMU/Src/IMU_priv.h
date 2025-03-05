@@ -6,7 +6,6 @@
 #ifndef IMU_PRIV_H
 #define IMU_PRIV_H
 
-
 /* Register Addresses */
 #define IMU_ID 			        (0xA0)
 #define IMU_CHIP_ID 		     0x00   // value: 0xA0
@@ -102,13 +101,13 @@
 /* IMU Registers Base of each reading : 
    used in Get functions for more readability
 */
-#define  IMU_VECTOR_ACCELEROMETER   0x08   // Default: m/s²
+#define  IMU_VECTOR_ACCELEROMETER   0x08   // Default: m/sï¿½
 #define  IMU_VECTOR_MAGNETOMETER    0x0E   // Default: uT
 #define  IMU_VECTOR_GYROSCOPE       0x14   // Default: rad/s
 #define  IMU_VECTOR_EULER           0x1A   // Default: degrees
 #define  IMU_VECTOR_QUATERNION      0x20   // No units
-#define  IMU_VECTOR_LINEARACCEL     0x28   // Default: m/s²
-#define  IMU_VECTOR_GRAVITY         0x2E   // Default: m/s²
+#define  IMU_VECTOR_LINEARACCEL     0x28   // Default: m/sï¿½
+#define  IMU_VECTOR_GRAVITY         0x2E   // Default: m/sï¿½
 
 /* priv functions */
 static void IMU_voidDelay(int time);
