@@ -22,13 +22,62 @@ typedef struct{
     uint64_t data; /*!< Data to be sent. Maximum of 8 bytes (as specified by CAN protocol). */
 } COMM_can_message_t;
 
+
+/**
+ * @brief Format for messages from IMU to be included in a COMM_can_message_t object.
+ * Can include accleration or angles.
+ * 
+ */
+typedef struct
+{
+    uint16_t x;     /*!< X-axis value. */
+    uint16_t y;     /*!< Y-axis value. */
+    uint16_t z;     /*!< Z-axis value. */
+} COMM_message_IMU_t;
+
+
+// TODO: this is temporary until I figure out the accuracy and range on the travel and pressure sensors.
+/**
+ * @brief Format for messages from ADC_DEV to be included in a COMM_can_message_t object.
+ * Includes travel sensor and pressure sensor values.
+ * 
+ */
+typedef struct
+{
+    uint64_t SUS_1 : 10;
+    uint64_t SUS_2 : 10;
+    uint64_t SUS_3 : 10;
+    uint64_t SUS_4 : 10;
+
+    uint64_t PRESSURE_1 : 10;
+    uint64_t PRESSURE_2 : 10;
+} COMM_message_ADC_t;
+
+
+/**
+ * @brief Format for messages from proximity to be included in a COMM_can_message_t object.
+ * Contains RPM for the 4 wheels and the angle of the steering wheel from rotary encoder.
+ * 
+ */
+typedef struct
+{
+    uint64_t RPM_front_left : 12;
+    uint64_t RPM_front_right : 12;
+    uint64_t RPM_rear_left : 12;
+    uint64_t RPM_rear_right : 12;
+
+    uint64_t ENCODER_angle: 10;
+} COMM_message_PROX_encoder_t;
+ 
+
 /**
  * @brief ID for CAN messages.
  * 
  */
 typedef enum {
     COMM_CAN_ID_LED = 3,
-    COMM_CAN_ID_IMU,
+    COMM_CAN_ID_IMU_ANGLE,
+    COMM_CAN_ID_IMU_ACCEL,
     COMM_CAN_ID_TRAVEL,
     COMM_CAN_ID_PROX
 } COMM_can_id;
