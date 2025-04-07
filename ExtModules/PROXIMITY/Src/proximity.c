@@ -36,7 +36,7 @@ void PROXIMITY_task()
     while (1)
     {
         // TODO: needs testing.
-        vTaskDelay(50);
+        vTaskDelay(1000);
 
         for (int wheel_no = 0; wheel_no < 2; wheel_no++)
         {
@@ -115,7 +115,7 @@ void PROXIMITY_task()
         proximity_encoder_message.RPM_front_left = PROXIMITY_wheel_rpm[FRONT_LEFT_BUFF];
         proximity_encoder_message.RPM_front_right = PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF];
         proximity_encoder_message.RPM_rear_left = 1234;
-        proximity_encoder_message.RPM_rear_right = 5678;
+        proximity_encoder_message.RPM_rear_right = 4095;
         proximity_encoder_message.ENCODER_angle = 123;
         can_message.data = *((uint64_t*)(&proximity_encoder_message));
         COMM_can_enqueue(&can_message);

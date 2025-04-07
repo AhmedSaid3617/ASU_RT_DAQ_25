@@ -17,9 +17,9 @@
  * 
  */
 typedef struct{
-    uint8_t size;  /*!< Size of the data in bytes. */
-    uint16_t id;   /*!< 11-bit CAN message id. Must be the least-significant 11 bits. */
     uint64_t data; /*!< Data to be sent. Maximum of 8 bytes (as specified by CAN protocol). */
+    uint16_t id;   /*!< 11-bit CAN message id. Must be the least-significant 11 bits. */
+    uint8_t size;  /*!< Size of the data in bytes. */
 } COMM_can_message_t;
 
 
