@@ -30,9 +30,9 @@ typedef struct{
  */
 typedef struct
 {
-    uint16_t x;     /*!< X-axis value. */
-    uint16_t y;     /*!< Y-axis value. */
-    uint16_t z;     /*!< Z-axis value. */
+    int16_t x;     /*!< X-axis value. */
+    int16_t y;     /*!< Y-axis value. */
+    int16_t z;     /*!< Z-axis value. */
 } COMM_message_IMU_t;
 
 
