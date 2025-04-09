@@ -75,7 +75,7 @@ typedef struct {
 
 /* Prototypes */
 
-void IMU_voidInit(IMU_structCfg * Add_structCfg);
+void IMU_configure(IMU_structCfg * Add_structCfg);
 void IMU_voidSetAxisMap(IMU_structCfg * Add_structCfg,IMU_tAxisMap * axis);
 HAL_StatusTypeDef IMU_enumReset(IMU_structCfg * Add_structCfg);
 IMU_tstructVector IMU_structGetVectorAccelerometer(IMU_structCfg * Add_structCfg);
@@ -88,5 +88,7 @@ IMU_tstructVector IMU_structGetVectorQuaternion(IMU_structCfg * Add_structCfg);
 IMU_structCalibData IMU_structGetCalibrationData(IMU_structCfg * Add_structCfg);
 void IMU_voidSetCalibrationData(IMU_structCfg * Add_structCfg);
 
+void IMU_init(IMU_structCfg* imu_handle);
+void IMU_task();
 
 #endif

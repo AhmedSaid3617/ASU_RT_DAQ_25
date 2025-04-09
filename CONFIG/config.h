@@ -2,18 +2,26 @@
 #define CONFIG_H
 
 /* ======================================= TRAVEL ======================================= */
-
 #define LINEAR_POT_PEAK 100
 
-#define NO_OF_TRAVEL_SENSORS 4
-#define MAX_VALUE_TRAVEL_SENSOR 4095
+#define CONFIG_TRAVEL_SENSOR_NUM 4
+#define CONFIG_ADC_MAX_VALUE 4095
 
-#define NO_OF_PRESSURE_SENSORS 2
-#define MAX_VALUE_PRESSURE_SENSOR 4095
+#define CONFIG_PRESSURE_SENSOR_NUM 2
 
+#define CONFIG_TRAVEL_TASK_WAIT 500
+/* ===================================== END TRAVEL ===================================== */
+
+/* ===================================== PROXIMITY ===================================== */
 #define CONFIG_PROXIMITY_TIMER_FREQ 93632.959
 #define CONFIG_TIRE_CIRCUMFERENCE 3.1415 * 18 * 0.0254
+/* =================================== END PROXIMITY =================================== */
 
-/* ===================================== END TRAVEL ===================================== */
+/* ===================================== IMU ===================================== */
+#define CONFIG_IMU_ANGLES_ACCURACY 100.0
+#define CONFIG_IMU_ACCELERATION_ACCURACY 100.0
+/* =================================== END IMU =================================== */
+
+
 
 #endif

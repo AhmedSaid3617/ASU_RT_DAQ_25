@@ -58,6 +58,26 @@ void trace_task_out();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SUS_1_Pin GPIO_PIN_0
+#define SUS_1_GPIO_Port GPIOC
+#define SUS_2_Pin GPIO_PIN_1
+#define SUS_2_GPIO_Port GPIOC
+#define SUS_3_Pin GPIO_PIN_6
+#define SUS_3_GPIO_Port GPIOA
+#define SUS_4_Pin GPIO_PIN_7
+#define SUS_4_GPIO_Port GPIOA
+#define Pressure_1_Pin GPIO_PIN_4
+#define Pressure_1_GPIO_Port GPIOC
+#define Pressure_2_Pin GPIO_PIN_5
+#define Pressure_2_GPIO_Port GPIOC
+#define FRONT_LEFT_WHEEL_Pin GPIO_PIN_9
+#define FRONT_LEFT_WHEEL_GPIO_Port GPIOA
+#define FRONT_RIGHT_WHEEL_Pin GPIO_PIN_11
+#define FRONT_RIGHT_WHEEL_GPIO_Port GPIOA
+#define IMU_SCL_Pin GPIO_PIN_6
+#define IMU_SCL_GPIO_Port GPIOB
+#define IMU_SDA_Pin GPIO_PIN_7
+#define IMU_SDA_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

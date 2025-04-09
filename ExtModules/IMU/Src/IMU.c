@@ -90,7 +90,7 @@ HAL_StatusTypeDef IMU_enumReset(IMU_structCfg * Add_structCfg) {
  *
  * @param Add_structCfg Pointer to the configuration structure of the IMU device.
  */
-void IMU_voidInit(IMU_structCfg * Add_structCfg) {
+void IMU_configure(IMU_structCfg * Add_structCfg) {
     /* 1- Reset */
     IMU_enumReset(Add_structCfg);
 

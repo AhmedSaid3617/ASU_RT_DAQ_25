@@ -1,11 +1,12 @@
 #include "stm32f4xx.h"
 #include "travel.h"
+#include "COMM.h"
 #include <stdint.h>
 
-double suspension_val[NO_OF_TRAVEL_SENSORS];
+static uint16_t TRAVEL_ADC_readings[CONFIG_TRAVEL_SENSOR_NUM];
 
-void Travel_voidProcessAdcReadings(uint16_t *Add_u16AdcData)
-{
-	for (uint8_t i = 0; i < NO_OF_TRAVEL_SENSORS; i++)
-	suspension_val[i] = (uint8_t)((Add_u16AdcData[i] * LINEAR_POT_PEAK) / MAX_VALUE_TRAVEL_SENSOR);
+// TODO: needs input buffer.
+void TRAVEL_process_adc_readings(double* travel_output_buffer){
+	for (uint8_t i = 0; i < CONFIG_TRAVEL_SENSOR_NUM; i++)
+	travel_output_buffer[i] = (uint8_t)((TRAVEL_ADC_readings[i] * LINEAR_POT_PEAK) / CONFIG_ADC_MAX_VALUE);
 }

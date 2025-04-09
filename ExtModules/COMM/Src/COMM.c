@@ -7,7 +7,7 @@ QueueHandle_t CAN_queue;
 
 void COMM_init(CAN_HandleTypeDef *can_handle, CAN_TxHeaderTypeDef* can_tx_header)
 {
-    CAN_queue = xQueueCreate(sizeof(COMM_can_message_t), 10);
+    CAN_queue = xQueueCreate(10, sizeof(COMM_can_message_t));
     HAL_CAN_Start(can_handle);
     can_tx_header->IDE = CAN_ID_STD;
     can_tx_header->RTR = CAN_RTR_DATA;
@@ -16,8 +16,6 @@ void COMM_init(CAN_HandleTypeDef *can_handle, CAN_TxHeaderTypeDef* can_tx_header
 
 void COMM_can_enqueue(COMM_can_message_t* message)
 {
-    /* can_tx_header.DLC = message->size;
-    can_tx_header.StdId = message->id; */
     xQueueSend(CAN_queue, message, 2);
 }
 
