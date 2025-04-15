@@ -68,7 +68,6 @@ typedef struct
 
     uint64_t ENCODER_angle: 10;
 } COMM_message_PROX_encoder_t;
- 
 
 /**
  * @brief ID for CAN messages.
@@ -79,8 +78,14 @@ typedef enum {
     COMM_CAN_ID_IMU_ANGLE,
     COMM_CAN_ID_IMU_ACCEL,
     COMM_CAN_ID_TRAVEL,
-    COMM_CAN_ID_PROX
+    COMM_CAN_ID_PROX_ENCODER,
+    COMM_CAN_ID_DASHBOARD_SPEED = 0x65
 } COMM_can_id;
+
+/**
+ * @brief Speed to be sent to the dashboard.
+ */
+typedef uint8_t COMM_dashboard_speed_t; 
 
 /**
  * @brief Adds one CAN message to the FreeRTOS queue, to be transmitted on CAN bus by the CAN task.

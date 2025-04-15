@@ -4,7 +4,6 @@
 
 uint16_t PROXIMITY_DMA_capture_buff[4][16];
 double PROXIMITY_wheel_rpm[4];
-double PROXIMITY_dashboard_speed = 0;
 static TIM_HandleTypeDef proximity_timer_handle;
 static DMA_HandleTypeDef proximity_dma_handles[4];
 
@@ -26,13 +25,15 @@ void PROXIMITY_init(TIM_HandleTypeDef *htim, DMA_HandleTypeDef* hdma[4])
 
 void PROXIMITY_task()
 {
-    COMM_can_message_t can_message = {};
+    COMM_can_message_t can_message_rpm = {};
+    COMM_can_message_t can_message_speed = {};
     COMM_message_PROX_encoder_t proximity_encoder_message = {};
+    COMM_dashboard_speed_t dashboard_speed_message = 0;
     uint8_t slow_counter = 0;
 
     // TODO: There might be more IDs in the future.
-    can_message.id = COMM_CAN_ID_PROX;
-    can_message.size = 8;
+    can_message_rpm.id = COMM_CAN_ID_PROX_ENCODER;
+    can_message_rpm.size = 8;
     while (1)
     {
         // TODO: needs testing.
@@ -112,13 +113,19 @@ void PROXIMITY_task()
 
         // TODO: calculate back wheels too.
 
+
         proximity_encoder_message.RPM_front_left = PROXIMITY_wheel_rpm[FRONT_LEFT_BUFF];
         proximity_encoder_message.RPM_front_right = PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF];
-        proximity_encoder_message.RPM_rear_left = 1234;
-        proximity_encoder_message.RPM_rear_right = 4095;
+        proximity_encoder_message.RPM_rear_left = PROXIMITY_wheel_rpm[REAR_LEFT_BUFF];
+        proximity_encoder_message.RPM_rear_right = PROXIMITY_wheel_rpm[REAR_RIGHT_BUFF];
         proximity_encoder_message.ENCODER_angle = 123;
-        can_message.data = *((uint64_t*)(&proximity_encoder_message));
-        COMM_can_enqueue(&can_message);
+        can_message_rpm.data = *((uint64_t*)(&proximity_encoder_message));
 
+        dashboard_speed_message = (uint8_t) PROXIMITY_CALCULATE_SPEED(PROXIMITY_wheel_rpm[FRONT_LEFT_BUFF], PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF]);
+        can_message_speed.id = COMM_CAN_ID_DASHBOARD_SPEED;
+        can_message_speed.data = dashboard_speed_message;
+
+        COMM_can_enqueue(&can_message_rpm);
+        COMM_can_enqueue(&can_message_speed);
     }
 }

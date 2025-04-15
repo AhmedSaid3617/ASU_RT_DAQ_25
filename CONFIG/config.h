@@ -14,7 +14,7 @@
 
 /* ===================================== PROXIMITY ===================================== */
 #define CONFIG_PROXIMITY_TIMER_FREQ 93632.959
-#define CONFIG_TIRE_CIRCUMFERENCE 3.1415 * 18 * 0.0254
+#define CONFIG_TIRE_CIRCUMFERENCE 3.1415 * 0.46482 // 0.46482 is the diameter of the wheel in meters.
 /* =================================== END PROXIMITY =================================== */
 
 /* ===================================== IMU ===================================== */
