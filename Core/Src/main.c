@@ -76,7 +76,6 @@ IMU_tstructVector imu_test_vector;
 
 /* ============================================= CAN VARIABLES ============================================= */
 CAN_TxHeaderTypeDef can_tx_header;
-uint32_t tx_mailbox;
 uint8_t data_send[10] = {0x22, 45};
 /* =========================================== CAN VARIABLES END =========================================== */
 
@@ -524,26 +523,6 @@ void green_task()
     COMM_can_enqueue(&can_message);
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
     vTaskDelay(250);
-  }
-}
-
-void CAN_task()
-{
-  COMM_can_message_t can_message;
-  while (1)
-  {
-    can_message = COMM_can_dequeue();
-    can_tx_header.DLC = can_message.size;
-    can_tx_header.StdId = can_message.id;
-
-    // TODO: figure out if this is needed.
-    taskENTER_CRITICAL();
-    if (HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, &can_message.data, &tx_mailbox) == HAL_ERROR)
-    {
-
-      // Error_Handler();
-    }
-    taskEXIT_CRITICAL();
   }
 }
 
