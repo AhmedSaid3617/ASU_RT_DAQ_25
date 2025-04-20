@@ -29,7 +29,7 @@ void PROXIMITY_task()
     COMM_can_message_t can_message_speed = {};
     COMM_message_PROX_encoder_t proximity_encoder_message = {};
     COMM_dashboard_speed_t dashboard_speed_message = 0;
-    uint8_t slow_counter = 0;
+    uint8_t slow_counter[4] = {0, 0, 0, 0}; // Changed to an array of size 4
 
     // TODO: There might be more IDs in the future.
     can_message_rpm.id = COMM_CAN_ID_PROX_ENCODER;
@@ -39,7 +39,7 @@ void PROXIMITY_task()
         // TODO: needs testing.
         vTaskDelay(50);
 
-        for (int wheel_no = 0; wheel_no < 2; wheel_no++)
+        for (int wheel_no = 0; wheel_no < 2; wheel_no++) // Only front wheels for now
         {
             int last_reading_index = 0;
 
@@ -54,18 +54,13 @@ void PROXIMITY_task()
             // If the wheel is moving fast.
             if (last_reading_index > 1)
             {
-                slow_counter = 0;
+                slow_counter[wheel_no] = 0; // Reset the corresponding slow_counter
                 // Calculate the speed.
-                PROXIMITY_wheel_rpm[wheel_no] = (last_reading_index - 1) * 0.25 * 60 * (CONFIG_PROXIMITY_TIMER_FREQ / (PROXIMITY_DMA_capture_buff[wheel_no][last_reading_index - 1] - PROXIMITY_DMA_capture_buff[wheel_no][0]));
+                uint16_t difference = PROXIMITY_DMA_capture_buff[wheel_no][last_reading_index - 1] - PROXIMITY_DMA_capture_buff[wheel_no][last_reading_index - 2];
+                PROXIMITY_wheel_rpm[wheel_no] = 0.25 * 60 * (CONFIG_PROXIMITY_TIMER_FREQ / difference);
 
-                // Pause DMA and Timer
+                // Pause DMA.
                 HAL_DMA_Abort(&proximity_dma_handles[wheel_no]);
-                HAL_TIM_Base_Stop(&proximity_timer_handle);
-
-                // Reset the DMA pointer so that it starts at the begining of the array.
-                proximity_dma_handles[wheel_no].Instance->M0AR = &PROXIMITY_DMA_capture_buff[wheel_no];
-                proximity_dma_handles[wheel_no].Instance->NDTR = 16;
-                HAL_DMA_Start(&proximity_dma_handles[wheel_no], timer_counters[wheel_no], &PROXIMITY_DMA_capture_buff[wheel_no], 16);
 
                 // Erase the array.
                 for (int i = 0; i < 16; i++)
@@ -73,30 +68,25 @@ void PROXIMITY_task()
                     PROXIMITY_DMA_capture_buff[wheel_no][i] = 0;
                 }
 
-                // Reset the timer so that the readings in the next cycle will be relative to 0.
-                __HAL_TIM_SET_COUNTER(&proximity_timer_handle, 0);
-                HAL_TIM_Base_Start(&proximity_timer_handle);
+                // Reset the DMA pointer so that it starts at the beginning of the array.
+                proximity_dma_handles[wheel_no].Instance->M0AR = &PROXIMITY_DMA_capture_buff[wheel_no];
+                proximity_dma_handles[wheel_no].Instance->NDTR = 16;
+                HAL_DMA_Start(&proximity_dma_handles[wheel_no], timer_counters[wheel_no], &PROXIMITY_DMA_capture_buff[wheel_no], 16);
             }
             else
             {
                 // TODO: macro this magic number and try playing with it.
-                if (slow_counter <= 14) // The car is slow
+                if (slow_counter[wheel_no] <= 14) // The car is slow
                 {
-                    slow_counter++;
+                    slow_counter[wheel_no]++; // Increment the corresponding slow_counter
                 }
                 else
                 { // The car is at rest.
                     PROXIMITY_wheel_rpm[wheel_no] = 0;
-                    slow_counter = 0;
+                    slow_counter[wheel_no] = 0; // Reset the corresponding slow_counter
 
-                    // Pause DMA and Timer
+                    // Pause DMA.
                     HAL_DMA_Abort(&proximity_dma_handles[wheel_no]);
-                    HAL_TIM_Base_Stop(&proximity_timer_handle);
-
-                    // Reset the DMA pointer so that it starts at the begining of the array.
-                    proximity_dma_handles[wheel_no].Instance->M0AR = &PROXIMITY_DMA_capture_buff[wheel_no];
-                    proximity_dma_handles[wheel_no].Instance->NDTR = 16;
-                    HAL_DMA_Start(&proximity_dma_handles[wheel_no], timer_counters[wheel_no], &PROXIMITY_DMA_capture_buff[wheel_no], 16);
 
                     // Erase the array.
                     for (int i = 0; i < 16; i++)
@@ -104,25 +94,24 @@ void PROXIMITY_task()
                         PROXIMITY_DMA_capture_buff[wheel_no][i] = 0;
                     }
 
-                    // Reset the timer so that the readings in the next cycle will be relative to 0.
-                    __HAL_TIM_SET_COUNTER(&proximity_timer_handle, 0);
-                    HAL_TIM_Base_Start(&proximity_timer_handle);
+                    // Reset the DMA pointer so that it starts at the beginning of the array.
+                    proximity_dma_handles[wheel_no].Instance->M0AR = &PROXIMITY_DMA_capture_buff[wheel_no];
+                    proximity_dma_handles[wheel_no].Instance->NDTR = 16;
+                    HAL_DMA_Start(&proximity_dma_handles[wheel_no], timer_counters[wheel_no], &PROXIMITY_DMA_capture_buff[wheel_no], 16);
                 }
             }
         }
 
         // TODO: calculate back wheels too.
 
-
         proximity_encoder_message.RPM_front_left = (uint16_t)PROXIMITY_wheel_rpm[FRONT_LEFT_BUFF];
         proximity_encoder_message.RPM_front_right = (uint16_t)PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF];
-        proximity_encoder_message.RPM_rear_left = PROXIMITY_wheel_rpm[REAR_LEFT_BUFF];
-        proximity_encoder_message.RPM_rear_right = PROXIMITY_wheel_rpm[REAR_RIGHT_BUFF];
+        proximity_encoder_message.RPM_rear_left = (uint16_t)PROXIMITY_wheel_rpm[REAR_LEFT_BUFF];
+        proximity_encoder_message.RPM_rear_right = (uint16_t)PROXIMITY_wheel_rpm[REAR_RIGHT_BUFF];
         proximity_encoder_message.ENCODER_angle = 123;
         can_message_rpm.data = *((uint64_t*)(&proximity_encoder_message));
 
         dashboard_speed_message = (uint8_t) PROXIMITY_CALCULATE_SPEED(PROXIMITY_wheel_rpm[FRONT_LEFT_BUFF], PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF]);
-        //dashboard_speed_message = 123;
         can_message_speed.id = COMM_CAN_ID_DASHBOARD_SPEED;
         can_message_speed.data = dashboard_speed_message;
         can_message_speed.size = 1;
