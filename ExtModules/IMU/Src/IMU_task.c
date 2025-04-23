@@ -25,7 +25,8 @@ void IMU_init(IMU_structCfg *imu_handle)
 
 void IMU_task()
 {
-    COMM_can_message_t can_message = {};
+    COMM_can_message_t can_message_accel = {};
+    COMM_can_message_t can_message_angle = {};
 
     COMM_message_IMU_t imu_acceleration_message = {};
     COMM_message_IMU_t imu_angles_message = {};
@@ -33,27 +34,35 @@ void IMU_task()
     IMU_tstructVector acceleration_vector = {};
     IMU_tstructVector angles_vector = {};
 
-    can_message.size = 6;
+    can_message_accel.size = 6;
+    can_message_angle.size = 6;
+
+    can_message_accel.id = COMM_CAN_ID_IMU_ACCEL;
+    can_message_angle.id = COMM_CAN_ID_IMU_ANGLE;
+
     while (1)
     {
         // TODO: needs so much testing.
         acceleration_vector = IMU_structGetVectorAccelerometer(imu);
         angles_vector = IMU_structGetVectorEuler(imu);
 
-        can_message.id = COMM_CAN_ID_IMU_ACCEL;
         imu_acceleration_message.x = (int16_t)(acceleration_vector.x * CONFIG_IMU_ACCELERATION_ACCURACY);
         imu_acceleration_message.y = (int16_t)(acceleration_vector.y * CONFIG_IMU_ACCELERATION_ACCURACY);
         imu_acceleration_message.z = (int16_t)(acceleration_vector.z * CONFIG_IMU_ACCELERATION_ACCURACY);
-        can_message.data = *((uint64_t*)(&imu_acceleration_message));
-        COMM_can_enqueue(&can_message);
+        can_message_accel.data = *((uint64_t*)(&imu_acceleration_message));
 
-        can_message.id = COMM_CAN_ID_IMU_ANGLE;
         imu_angles_message.x = (int16_t)(angles_vector.x * CONFIG_IMU_ANGLES_ACCURACY);
         imu_angles_message.y = (int16_t)(angles_vector.y * CONFIG_IMU_ANGLES_ACCURACY);
         imu_angles_message.z = (int16_t)(angles_vector.z * CONFIG_IMU_ANGLES_ACCURACY);
-        can_message.data = *((uint64_t*)(&imu_angles_message));
-        COMM_can_enqueue(&can_message);
+        can_message_angle.data = *((uint64_t*)(&imu_angles_message));
 
-        vTaskDelay(1000);
+        // Enter critical section.
+        taskENTER_CRITICAL();
+        COMM_can_enqueue(&can_message_accel);
+        COMM_can_enqueue(&can_message_angle);
+        // Exit critical section.
+        taskEXIT_CRITICAL();
+
+        vTaskDelay(100);
     }
 }
