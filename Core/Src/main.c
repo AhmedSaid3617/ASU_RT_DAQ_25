@@ -62,6 +62,8 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim1;
 DMA_HandleTypeDef hdma_tim1_ch4_trig_com;
 DMA_HandleTypeDef hdma_tim1_ch2;
+DMA_HandleTypeDef hdma_tim1_ch3;
+DMA_HandleTypeDef hdma_tim1_ch1;
 
 /* USER CODE BEGIN PV */
 
@@ -86,7 +88,7 @@ TaskHandle_t task_handles[5]; /* Task handles for all the tasks created in the p
 /* ================================= ANALYSIS VARIABLES END ================================= */
 
 /* =================================== PROXIMITY =================================== */
-DMA_HandleTypeDef *PROXIMITY_DMA_handlers[4] = {&hdma_tim1_ch2, &hdma_tim1_ch4_trig_com};
+DMA_HandleTypeDef *PROXIMITY_DMA_handlers[4] = {&hdma_tim1_ch2, &hdma_tim1_ch4_trig_com, &hdma_tim1_ch3, &hdma_tim1_ch1};
 /* ================================= PROXIMITY END ================================= */
 
 /* =================================== ADC VARIABLES =================================== */
@@ -454,7 +456,15 @@ static void MX_TIM1_Init(void)
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
   sConfigIC.ICFilter = 0;
+  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }

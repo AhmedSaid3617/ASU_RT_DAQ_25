@@ -70,8 +70,12 @@ void trace_task_out();
 #define Pressure_1_GPIO_Port GPIOC
 #define Pressure_2_Pin GPIO_PIN_5
 #define Pressure_2_GPIO_Port GPIOC
+#define REAR_RIGHT_WHEEL_Pin GPIO_PIN_8
+#define REAR_RIGHT_WHEEL_GPIO_Port GPIOA
 #define FRONT_LEFT_WHEEL_Pin GPIO_PIN_9
 #define FRONT_LEFT_WHEEL_GPIO_Port GPIOA
+#define REAR_LEFT_WHEEL_Pin GPIO_PIN_10
+#define REAR_LEFT_WHEEL_GPIO_Port GPIOA
 #define FRONT_RIGHT_WHEEL_Pin GPIO_PIN_11
 #define FRONT_RIGHT_WHEEL_GPIO_Port GPIOA
 #define IMU_SCL_Pin GPIO_PIN_6

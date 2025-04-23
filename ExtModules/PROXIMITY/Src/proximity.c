@@ -21,6 +21,8 @@ void PROXIMITY_init(TIM_HandleTypeDef *htim, DMA_HandleTypeDef* hdma[4])
     
     HAL_TIM_IC_Start_DMA(htim, TIM_CHANNEL_2, &PROXIMITY_DMA_capture_buff[FRONT_LEFT_BUFF], 16);
     HAL_TIM_IC_Start_DMA(htim, TIM_CHANNEL_4, &PROXIMITY_DMA_capture_buff[FRONT_RIGHT_BUFF], 16);
+    HAL_TIM_IC_Start_DMA(htim, TIM_CHANNEL_3, &PROXIMITY_DMA_capture_buff[REAR_LEFT_BUFF], 16);
+    HAL_TIM_IC_Start_DMA(htim, TIM_CHANNEL_1, &PROXIMITY_DMA_capture_buff[REAR_RIGHT_BUFF], 16);
 }
 
 void PROXIMITY_task()
@@ -29,9 +31,8 @@ void PROXIMITY_task()
     COMM_can_message_t can_message_speed = {};
     COMM_message_PROX_encoder_t proximity_encoder_message = {};
     COMM_dashboard_speed_t dashboard_speed_message = 0;
-    uint8_t slow_counter[4] = {0, 0, 0, 0}; // Changed to an array of size 4
+    uint8_t slow_counter[4] = {0, 0, 0, 0};
 
-    // TODO: There might be more IDs in the future.
     can_message_rpm.id = COMM_CAN_ID_PROX_ENCODER;
     can_message_rpm.size = 8;
     while (1)
@@ -39,7 +40,7 @@ void PROXIMITY_task()
         // TODO: needs testing.
         vTaskDelay(50);
 
-        for (int wheel_no = 0; wheel_no < 2; wheel_no++) // Only front wheels for now
+        for (int wheel_no = 0; wheel_no < 4; wheel_no++)
         {
             int last_reading_index = 0;
 
@@ -115,8 +116,12 @@ void PROXIMITY_task()
         can_message_speed.id = COMM_CAN_ID_DASHBOARD_SPEED;
         can_message_speed.data = dashboard_speed_message;
         can_message_speed.size = 1;
-
-        COMM_can_enqueue(&can_message_rpm);
+        
+        // Enter critical section.
+        taskENTER_CRITICAL();
         COMM_can_enqueue(&can_message_speed);
+        COMM_can_enqueue(&can_message_rpm);
+        // Exit critical section.
+        taskEXIT_CRITICAL();
     }
 }
