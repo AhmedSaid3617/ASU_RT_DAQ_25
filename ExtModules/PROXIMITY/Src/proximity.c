@@ -1,6 +1,7 @@
 #include "proximity.h"
 #include "config.h"
 #include "proximity_priv.h"
+#include "encoder.h"
 
 uint16_t PROXIMITY_DMA_capture_buff[4][16];
 double PROXIMITY_wheel_rpm[4];
@@ -109,7 +110,7 @@ void PROXIMITY_task()
         proximity_encoder_message.RPM_front_right = (uint16_t)PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF];
         proximity_encoder_message.RPM_rear_left = (uint16_t)PROXIMITY_wheel_rpm[REAR_LEFT_BUFF];
         proximity_encoder_message.RPM_rear_right = (uint16_t)PROXIMITY_wheel_rpm[REAR_RIGHT_BUFF];
-        proximity_encoder_message.ENCODER_angle = 123;
+        proximity_encoder_message.ENCODER_angle = (uint16_t)ENCODER_get_angle();
         can_message_rpm.data = *((uint64_t*)(&proximity_encoder_message));
 
         dashboard_speed_message = (uint8_t) PROXIMITY_CALCULATE_SPEED(PROXIMITY_wheel_rpm[FRONT_LEFT_BUFF], PROXIMITY_wheel_rpm[FRONT_RIGHT_BUFF]);

@@ -64,6 +64,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ExtModules/ADC_DEV/Src/adc_dev.c
     ExtModules/IMU/Src/IMU.c
     ExtModules/IMU/Src/IMU_task.c
+    ExtModules/ENCODER/Src/encoder.c
     
 )
 
@@ -79,6 +80,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ExtModules/TRAVEL/Inc
     ExtModules/PROXIMITY/Inc
     ExtModules/ADC_DEV/Inc
+    ExtModules/ENCODER/Inc
 )
 
 # Add project symbols (macros)
